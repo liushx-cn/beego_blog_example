@@ -1,0 +1,2 @@
+# beego_blog_example
+基于beego框架的博客示例，可用作beego项目的创建参考
