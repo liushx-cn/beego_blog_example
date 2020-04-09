@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+    <meta charset="UTF-8">
+    <title>即时聊天</title>
+    <link rel="stylesheet" href="../static/css/bootstrap.css">
+    <script src="../static/js/jquery.3.4.1.min.js"></script>
+    <script src="../static/js/bootstrap.js"></script>
+</head>
+<body>
+<div class="container">
+    <div><h1>{{ .nick }}</h1></div>
+    <div class="row">
+        <input class="form-control" type="text" id="content" placeholder="内容">
+        <button type="submit" class="btn btn-default" id="send">发送消息</button>
+    </div>
+    <h2 class="row">最新消息：</h2>
+    <ul id="msgs">
+        <li class="text-center">......</li>
+    </ul>
+</div>
+</body>
+<script>
+    socket = new WebSocket('ws://' + window.location.host + '/ws/join?user={{ .nick }}');
+    // Message received on the socket
+    socket.onmessage = function (event) {
+        var data = JSON.parse(event.data);
+        var li = document.createElement('li');
+
+        console.log(data);
+
+        switch (data.Type) {
+            case 0: // JOIN
+                if (data.User === $('#username').val()) {
+                    li.innerText = 'You joined the chat room.';
+                } else {
+                    li.innerText = data.User + ' joined the chat room.';
+                }
+                break;
+            case 1: // TALK
+                var accept_time = document.createElement('span');
+                var username = document.createElement('strong');
+                var content = document.createElement('span');
+
+                username.innerText = data.User;
+                content.innerText = data.Content;
+                accept_time.innerText = data.TimeStamp;
+
+                li.append(accept_time);
+                li.appendChild(username);
+                li.appendChild(document.createTextNode(': '));
+                li.appendChild(content);
+
+                break;
+            case 2: // LEAVE
+                li.innerText = data.User + ' left the chat room.';
+                break;
+        }
+
+        $('#msgs li').first().before(li);
+    };
+
+    // Send messages.
+    $('#send').click(function () {
+        var content = $('#content').val();
+        socket.send(content);
+        $('#content').val('');
+    });
+</script>
+</html>
