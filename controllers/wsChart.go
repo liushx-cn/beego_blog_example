@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"container/list"
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -16,17 +15,14 @@ const (
 )
 
 var (
-	UserList = new(list.List)
 	UserConn = make(map[string]*websocket.Conn)
 	MsgPipe  = make(chan Msg, 10)
 )
 
 // 判断加入的用户是否是新用户
 func Exists(username string) bool {
-	for user := UserList.Front(); user != nil; user = user.Next() {
-		if user.Value.(string) == username {
-			return true
-		}
+	if c := UserConn[username]; c != nil {
+		return true
 	}
 	return false
 }
@@ -82,7 +78,6 @@ func (c *ChartController) Join() {
 	}
 	if !Exists(user) {
 		UserConn[user] = conn
-		UserList.PushBack(user)
 	}
 
 	defer func() {
