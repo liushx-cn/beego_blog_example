@@ -24,7 +24,7 @@ var (
 // 判断加入的用户是否是新用户
 func Exists(username string) bool {
 	for user := UserList.Front(); user != nil; user = user.Next() {
-		if user.Value == username {
+		if user.Value.(string) == username {
 			return true
 		}
 	}
@@ -82,6 +82,7 @@ func (c *ChartController) Join() {
 	}
 	if !Exists(user) {
 		UserConn[user] = conn
+		UserList.PushBack(user)
 	}
 
 	defer func() {
